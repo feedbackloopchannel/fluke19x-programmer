@@ -37,7 +37,7 @@ void module_enable() {
   ram_disable();
   read_disable();
   write_disable();
-  for (int i = 0; i < 100; ++i) reset_disable(); # small delay after deactivating reset
+  for (int i = 0; i < 100; ++i) reset_disable(); // small delay after deactivating reset
 }
 
 void module_disable() {
