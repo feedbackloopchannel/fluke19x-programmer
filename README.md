@@ -8,4 +8,4 @@ Random notes:
 - 12MHz crystal was used, which should result in about 7.5% baud rate error, wich was not a problem.
 - Forgot to mark LEDs and polarized caps on silkscreen (used non-polarized ceramic caps in practice).
 - MCU is marked 3290PA on the schematic, but 3290A can be used just fine
-- Be careful aligning memory modules in this connector since the slot in the connector is slightly longer.
+- Be careful aligning memory modules (card edge type) in this connector since the slot in the connector is slightly longer.
