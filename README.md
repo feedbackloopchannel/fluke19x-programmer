@@ -2,6 +2,8 @@
 
 Video: https://www.youtube.com/watch?v=klQPO-uYMEA
 
+Forum: https://www.eevblog.com/forum/repair/fluke-199c-scopemeter-repair/
+
 # Random notes:
 - ZIP file contains gerbers and such. This file was submitted to JLCPCB.
 - A fixed baud rate of 115200 was used, which should work everywhere. Other speeds were not tested.
