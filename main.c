@@ -3,29 +3,32 @@
 #include <avr/io.h>
 #include <util/setbaud.h>
 
-void mempwr_on() { PORTB &= ~_BV(PB0); }
-void mempwr_off() { PORTB |= _BV(PB0); }
+inline void nop() { asm volatile("nop"); }
+inline void nopn(uint8_t n) { while (n > 0) { nop(); --n; } }
 
-void rom_enable() { PORTE &= ~_BV(PE2); }
-void rom_disable() { PORTE |= _BV(PE2); }
+inline void mempwr_on() { PORTB &= ~_BV(PB0); nopn(255); }
+inline void mempwr_off() { PORTB |= _BV(PB0); }
 
-void ram_enable() { PORTE &= ~_BV(PE3); }
-void ram_disable() { PORTE |= _BV(PE3); }
+inline void rom_enable() { PORTE &= ~_BV(PE2); nop(); }
+inline void rom_disable() { PORTE |= _BV(PE2); }
 
-void read_enable() { PORTE &= ~_BV(PE5); }
-void read_disable() { PORTE |= _BV(PE5); }
+inline void ram_enable() { PORTE &= ~_BV(PE3); nop(); }
+inline void ram_disable() { PORTE |= _BV(PE3); }
 
-void write_enable() { PORTE &= ~_BV(PE6); }
-void write_disable() { PORTE |= _BV(PE6); }
-void write_pulse() { write_enable(); write_disable(); }
+inline void read_enable() { PORTE &= ~_BV(PE5); nop(); }
+inline void read_disable() { PORTE |= _BV(PE5); }
 
-void reset_enable() { PORTE &= ~_BV(PE7); }
-void reset_disable() { PORTE |= _BV(PE7); }
+inline void write_enable() { PORTE &= ~_BV(PE6); nop(); }
+inline void write_disable() { PORTE |= _BV(PE6); }
+inline void write_pulse() { write_enable(); write_disable(); }
 
-void data_ports_in() { DDRA = 0; DDRC = 0; DDRD = 0; DDRF = 0; }
-void data_ports_out() { DDRA = 0xff; DDRC = 0xff; DDRD = 0xff; DDRF = 0xff; }
+inline void reset_enable() { PORTE &= ~_BV(PE7); }
+inline void reset_disable() { PORTE |= _BV(PE7); nopn(255); }
 
-void set_address(uint32_t addr) {
+inline void data_ports_in() { DDRA = 0; DDRC = 0; DDRD = 0; DDRF = 0; }
+inline void data_ports_out() { DDRA = 0xff; DDRC = 0xff; DDRD = 0xff; DDRF = 0xff; }
+
+inline void set_address(uint32_t addr) {
   PORTH = addr & 0xff;
   PORTJ = (addr >> 8) & 0x7f;
   PORTG = (addr >> 15) & 0x1f;
@@ -37,7 +40,7 @@ void module_enable() {
   ram_disable();
   read_disable();
   write_disable();
-  for (int i = 0; i < 100; ++i) reset_disable(); // small delay after deactivating reset
+  reset_disable();
 }
 
 void module_disable() {
@@ -52,7 +55,7 @@ void module_disable() {
 
 volatile uint8_t data[4];
 
-void read_data() {
+inline void read_data() {
   read_enable();
   data[0] = PINA;
   data[1] = PINC;
@@ -75,18 +78,17 @@ void uart_init() {
     UCSR0B = _BV(RXEN0) | _BV(TXEN0);   // enable RX and TX
 }
 
-void uart_tx(uint8_t byte) {
+inline void uart_tx(uint8_t byte) {
   loop_until_bit_is_set(UCSR0A, UDRE0); // wait until data register empty
   UDR0 = byte;
-  //loop_until_bit_is_set(UCSR0A, TXC0); // wait for completion
 }
 
-uint8_t uart_rx() {
+inline uint8_t uart_rx() {
   loop_until_bit_is_set(UCSR0A, RXC0); // wait for data
   return UDR0;
 }
 
-void tx_data() {
+inline void tx_data() {
   uart_tx(data[0]);
   uart_tx(data[1]);
   uart_tx(data[2]);
@@ -127,7 +129,7 @@ void read_chip_ids() {
 }
 
 // wait for both chips
-void wait_for_completion() {
+inline void wait_for_completion() {
   uint8_t ready;
   do {
     read_enable();
@@ -148,7 +150,7 @@ void erase_chips() {
   module_disable();
 }
 
-uint32_t rx_word() {
+inline uint32_t rx_word() {
   uint32_t word = uart_rx();
   word |= (uint32_t)uart_rx() << 8;
   word |= (uint32_t)uart_rx() << 16;
@@ -187,6 +189,7 @@ void write_flash() {
     write_pulse();
     data_ports_in();
     wait_for_completion();
+    nopn(50);
   }
   module_disable();  
 }
@@ -233,6 +236,8 @@ void test_ram() {
 }
 
 int main() {
+  MCUCR |= _BV(PUD); // disable pull-up
+
   // controls on port B
   mempwr_off();
   DDRB = _BV(PB0) | _BV(PB4) | _BV(PB5) | _BV(PB6) | _BV(PB7);
