@@ -189,7 +189,7 @@ void write_flash() {
     write_pulse();
     data_ports_in();
     wait_for_completion();
-    nopn(50);
+    nopn(100);
   }
   module_disable();  
 }
