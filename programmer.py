@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import argparse
 import serial
 
@@ -16,7 +18,7 @@ flash_size_words = 512 * 1024
 if args.old:
   flash_size_words *= 2;
 
-ser = serial.Serial(args.device, 115200, timeout = 12)
+ser = serial.Serial(args.device, 115200, timeout = 20)
 
 if args.test: # RAM test
   ser.write(b't')
