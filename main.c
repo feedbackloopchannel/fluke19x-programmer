@@ -189,7 +189,7 @@ void write_flash() {
     write_pulse();
     data_ports_in();
     wait_for_completion();
-    nopn(100);
+    nopn(200);
   }
   module_disable();  
 }
@@ -217,20 +217,25 @@ void test_ram() {
   data_ports_in();
   // generate the same sequence, read and compare
   word = START;
-  uint32_t errors = 0;
+  uint32_t errors_u1 = 0;
+  uint32_t errors_u2 = 0;
   for (uint32_t addr = 0; addr < SIZE; ++addr) {
     set_address(addr);
     read_data();
-    if (data[0] != (word & 0xff)) ++errors;
-    if (data[1] != ((word >> 8) & 0xff)) ++errors;
-    if (data[2] != ((word >> 16) & 0xff)) ++errors;
-    if (data[3] != ((word >> 24) & 0xff)) ++errors;
+    if (data[0] != (word & 0xff)) ++errors_u1;
+    if (data[1] != ((word >> 8) & 0xff)) ++errors_u1;
+    if (data[2] != ((word >> 16) & 0xff)) ++errors_u2;
+    if (data[3] != ((word >> 24) & 0xff)) ++errors_u2;
     word += delta;
   }
-  uart_tx(errors);
-  uart_tx(errors >> 8);
-  uart_tx(errors >> 16);
-  uart_tx(errors >> 24);
+  uart_tx(errors_u1);
+  uart_tx(errors_u1 >> 8);
+  uart_tx(errors_u1 >> 16);
+  uart_tx(errors_u1 >> 24);
+  uart_tx(errors_u2);
+  uart_tx(errors_u2 >> 8);
+  uart_tx(errors_u2 >> 16);
+  uart_tx(errors_u2 >> 24);
 
   module_disable();
 }
