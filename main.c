@@ -199,12 +199,11 @@ void test_ram() {
   ram_enable();
   data_ports_out();
 
-  // fill memory with pseudorandom numbers based on golden ratio
-  static const double GOLDEN_RATIO_RECIPROCAL = 0.6180339887498949;
+  // fill memory with pseudorandom numbers
   static const uint32_t SIZE = 256 * 1024ul;
   static const uint32_t START = 123456789; // arbitrary number to start with
+  uint32_t delta = 2654435769; // based on golden ratio
   uint32_t word = START;
-  uint32_t delta = ((uint32_t)(SIZE * GOLDEN_RATIO_RECIPROCAL)) | 1;
   for (uint32_t addr = 0; addr < SIZE; ++addr) {
     set_address(addr);
     PORTA = word & 0xff;
